@@ -24,9 +24,8 @@ void setup() {
     y2 += 88;
   } //Termina for.
   
-  //y, x
-  R[5][1]=1; //Inicia la primera reina y la agrega a una lista.
-  //R[4][0]=1;
+  //x, y
+  R[4][6]=1; //Inicia la primera reina y la agrega a una lista.
   
   
   int ctrl = 0; //Variable control es la variable que indica en qué indice colocar las reinas en el String de posiciones.
@@ -41,126 +40,206 @@ void setup() {
   /*for(int i = 0; i < 8; i++){
   System.out.print(Posiciones[i]);
   }*/
-  int cuantasEntradas = 0;
+  int reinasColocadas = 0; //O rC para los compas.
   
-  System.out.print(estaLibre(Posic, R, cuantasEntradas));
+  System.out.print(estaLibre(Posic, R, reinasColocadas));
 }
 
-void drawRect(int x1, int y1, int x2, int y2) { //Pinta los cuadrados del tablero.
-  fill(255, 255, 255);
-  rect(x1, y1, 88, 88);
-  fill(0, 0, 0);
-  rect(x2, y2, 88, 88); //Cuadrados negros.
-}
-
-boolean estaLibre(String P[], int R[][], int cE){ //Regresa 1 si está libre, regresa 0 si no lo está.
-  //Función que separa los strings en coordenadas.
-  String Aux = P[cE].toString();
+//-------- MAUSQUERRAMIENTAS QUE NOS AYUDARÁN MÁS TARDE. --------
+int separarCoordX(String P[], int rC){
+  String Aux = P[rC].toString();
   String Dividido[] = Aux.split(",");
-  int xR = Integer.parseInt(Dividido[0]);
-  int yR = Integer.parseInt(Dividido[1]);
-  int libreX = 0;
-  int libreY = 0;
-  int libreDiag1 = 0;
-  int libreDiag2 = 0;
-  
-  
-for(int x=0; x<8; x++){ //Esto dirá si hay algúna pieza en x que no sea la reina introducida.
-  if(R[x][yR]==1 && x != xR){ //Significa que no está libre.
-    libreX = 0;
-    break;
-  } else { //Significa que está libre.
-  libreX=1;
-  }
-}
-  
-for(int y=0; y<8; y++){ //Esto dirá si hay algúna pieza en y que no sea la reina introducida.
-  if(R[xR][y]==1 && y != yR){ //Significa que no está libre.
-  //System.out.print(y);
-    libreY = 0;
-    break;
-  } else { //Significa que está libre.
-  libreY=1;
-  }
+  return Integer.parseInt(Dividido[0]);
 }
 
-/*
-  Espacio para calcular las diagonales, para ello se usan las coordenadas de las reinas y se determina 
-  si el borde está cerca de x o de y, y en base en eso hace las restas correspondientes.
-*/
-
-int auxX; //auxX es una variable que sólo se usa en para este cálculo, xR es una variable global.
-int auxY; //auxY es una variable que sólo se usa en para este cálculo, yR es una variable global.
-//1 corresponde a el orden de la diagonal, en este caso 1 es de 0 a 7 y 2 es de 7 a 0.
-int restaX1 = 0; 
-int restaY1 = 0;
-int restaX2 = 0;
-int restaY2 = 0;
-
-//Diagonal de xy0 a xy7. Considerar x<y, x>y y x=y.
-if(xR<yR){ //x menor que y
-  if(xR == 0){
-    restaX1 = 0;
-  } else {
-   restaX1 = xR-xR; 
-  }
- restaY1 = yR - xR;
- 
-} else if(xR>yR) { //x mayor que y
-  if(yR == 0){
-    restaY1 = 0;
-  } else {
-   restaY1 = yR-yR; 
-  }
- restaX1 = xR - yR;
-
-} else if(xR == yR) { //x y y iguales
-  if(xR == 0 && yR == 0){
-    restaX1 = 0;
-    restaY1 = 0;
-  } else {
-    restaX1 = xR - xR;
-    restaY1 = yR - yR;
-  }
+int separarCoordY(String P[], int rC){
+  String Aux = P[rC].toString();
+  String Dividido[] = Aux.split(",");
+  return Integer.parseInt(Dividido[1]);
 }
 
-//Diagonal de xy7 a xy0.
-  //Cuadrante x.
-  if(xR >= 0 && xR <= 3){ //Cuadrante 1
+//-------- HERRAMIENTAS DE BÚSQUEDA. --------
+boolean libreX(int R[][], int PosxR, int PosyR){
+//Esta función dirá si existe alguna reina en x que provoque un jaque mate.
+//Funciona iterando en la posición de la reina a cada x, sin moverse de la y.
+boolean libre = true;
+int xR = PosxR;
+int yR = PosyR;
+  for(int x=0; x<8; x++){ 
+    if(R[x][yR]==1 && x != xR){ 
+      //Si cae aqui, significa que la reina no está libre y por lo tanto no se puede colocar ahí.
+      libre = false;
+      return libre;
+    }
+  }
+  return libre;
+}
+
+boolean libreY(int R[][], int PosxR, int PosyR){
+  //Esta función dirá si existe alguna reina en x que provoque un jaque mate.
+  //Funciona iterando en la posición de la reina a cada x, sin moverse de la y.
+boolean libre = true;
+int xR = PosxR;
+int yR = PosyR;
+  for(int y=0; y<8; y++){
+    if(R[xR][y]==1 && y != yR){
+      //Si cae aqui, significa que la reina no está libre y por lo tanto no se puede colocar ahí.
+      libre = false;
+      return libre;
+    }
+  }
+  return libre;
+}
+
+boolean libreDiag1(int R[][], int PosxR, int PosyR){
+  //Esta función calcula la diagonal desde 0,0 hasta 7,7 (o su similar).
+  //Entradas directas.
+  int xR = PosxR;
+  int yR = PosyR;
+  
+  //Variables locales;
+  boolean libre = true;
+  int restaX1 = 0; 
+  int restaY1 = 0;
+  int control = 0; //Variable para iterar la diagonal.
+  int cuadrado = 0; //Variable para saber el tamaño la diagonal;
+  int RCX = 0; //Restas de Control X.
+  int RCY = 0; //Restas de Control Y.
+  
+  //Parte que calcula desde dónde empezar.
+  if(xR<yR){ //Si x es menor que y.
     if(xR == 0){
-      restaX2 = 0;
+      restaX1 = 0;
+    } else {
+     restaX1 = xR-xR; 
+    }
+   restaY1 = yR - xR;
+   
+  } else if(xR>yR) { //Si x es mayor que y.
+    if(yR == 0){
+      restaY1 = 0;
+    } else {
+     restaY1 = yR-yR; 
+    }
+   restaX1 = xR - yR;
+  
+  } else if(xR == yR) { //Si ambas son iguales.
+    if(xR == 0 && yR == 0){
+      restaX1 = 0;
+      restaY1 = 0;
+    } else {
+      restaX1 = xR - xR;
+      restaY1 = yR - yR;
+    }
+  }
+  
+  //Parte que calcula dónde terminar.
+  RCX = 7 - xR;
+  RCY = 7 - yR;
+  
+  if(RCX < RCY){
+    cuadrado = (RCX + xR) - restaX1;
+  } else if(RCX > RCY){
+    cuadrado = (RCY + xR) - restaX1;
+  } else if(RCX == RCY){
+    cuadrado = (RCX + xR) - restaX1;
+  }
+  
+  
+  //Parte que recorre la matriz.
+  while(control < cuadrado + 1){
+    if(R[restaX1][restaY1] == 1 && restaX1 != xR && restaY1 != yR){
+      libre = false;
+      return false;
+    }
+    restaX1++;
+    restaY1++;
+    control++;
+  }
+  return libre;
+}
+
+boolean libreDiag2(int R[][], int PosxR, int PosyR){
+  //Esta función calcula la diagonal desde 0,7 hasta 7,0 (o su similar).
+  //Entradas directas.
+  int xR = PosxR;
+  int yR = PosyR;
+  
+  //Variables locales;
+  boolean libre = true;
+  int auxX = 0;
+  int auxY = 0;
+  int restaX2 = 0; 
+  int restaY2 = 0;
+  int control = 0; //Variable para iterar la diagonal.
+  int cuadrado = 0; //Variable para saber el tamaño la diagonal;
+  int RCX = 0; //Restas de Control X.
+  int RCY = 0; //Restas de Control Y.
+  
+  //Parte que calcula desde dónde empezar.
+  auxX = xR;
+  auxY = 7 - yR;
+  
+  if(auxX < auxY){ //Si x es menor a y.
+    if(auxX == 0){
+      restaX2 = xR;
       restaY2 = yR;
     } else {
       restaX2 = xR - xR;
-      restaY2 = xR + yR;
+      restaY2 = yR + xR;
     }
-                          //Fin Cuadrante 1
-  } else if (xR >= 4 && xR <= 7){
-    if(yR == 0){
-      restaX2 = xR - xR;
-      restaY2 = xR;
-    } else if (xR < yR){
-      auxY = 7 - xR;
-      restaY2 = 7;
+  } else if(auxX > auxY){ //Si x es mayor a y.
+    if(yR == 7){
+      restaX2 = xR;
+      restaY2 = yR;
+    } else {
       restaX2 = xR - auxY;
-    } else if (xR > yR){
-      auxY = 7 - xR;
-      restaY2 = 7;
-      restaX2 = xR - auxY;
+      restaY2 = yR + auxY;
     }
+  } else if(auxX == auxY){ //Si ambas son iguales.
+      if(xR == 0 && yR == 7){
+        restaX2 = xR;
+        restaY2 = yR;
+      } else {
+        restaX2 = xR - xR;
+        restaY2 = yR + auxY;
+      }
+  }
+
+  //Parte que calcula dónde terminar.
+  RCX = 7 - xR;
+  RCY = yR;
+  
+  if(RCX < RCY){
+    cuadrado = (RCX + xR) - restaX2;
+  } else if(RCX > RCY){
+    cuadrado = (RCY + xR) - restaX2;
+  } else if(RCX == RCY){
+    cuadrado = (RCX + xR) - restaX2;
   }
   
-  System.out.print("Restas{" + restaX2 + ", " + restaY2 + "}");
+  //Parte que recorre la matriz.
+  while(control < cuadrado + 1){
+    if(R[restaX2][restaY2] == 1 && restaX2 != xR && restaY2 != yR){
+      libre = false;
+      return false;
+    }
+    restaX2++;
+    restaY2--;
+    control++;
+  }
+  return libre;
+}
+//-------- FIN HERRAMIENTAS DE BÚSQUEDA. --------
 
-  
 
+boolean estaLibre(String P[], int R[][], int cE){ //Regresa 1 si está libre, regresa 0 si no lo está.
+  int xR = separarCoordX(P, cE);
+  int yR = separarCoordY(P, cE);
 
-
-  if(libreX == 1 && libreY == 1 && libreDiag1 == 1 && libreDiag2 == 1){
-    //System.out.print(libreX + "," + libreY + "," + libreDiag1 + "," + libreDiag2);
+  if(libreX(R, xR, yR) && libreY(R, xR, yR) && libreDiag1(R, xR, yR) && libreDiag2(R, xR, yR)){
   return true;
   } else {
-    //System.out.print(libreX + "," + libreY + "," + libreDiag1 + "," + libreDiag2);
    return false; 
   }
 }
@@ -170,6 +249,15 @@ void colocarReinas(){ //En esta deberá estar todo el proceso para colocar las r
   R[1][1]=1;
   R[4][6]=1;
   R[7][7]=1;
+}
+
+//Funciones para los gráficos.
+
+void drawRect(int x1, int y1, int x2, int y2) { //Pinta los cuadrados del tablero.
+  fill(255, 255, 255);
+  rect(x1, y1, 88, 88);
+  fill(0, 0, 0);
+  rect(x2, y2, 88, 88); //Cuadrados negros.
 }
 
 void draw() { //Dibuja las reinas.
