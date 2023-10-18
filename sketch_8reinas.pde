@@ -1,6 +1,5 @@
 int R[][]=new int[8][8]; //Matriz del tablero 
 String Posiciones[]= new String[8]; //Arreglo de posiciones de las reinas.
-String EspaciosLibres[] = new String[64]; //Matriz de las posiciones libres.
 
 void setup() {
   size(704, 704); //Crea tablero.
@@ -25,8 +24,14 @@ void setup() {
   } //Termina for.
   
   //Parte para colocar la primera reina y agregar sus coordenadas en una lista.
-    R[6][4]=1; //R[y][x]
+  int x = 0;
+  int y = 0;
+  
+    R[y][x]=1; //R[y][x]
 
+  Posiciones[0] = x + "," + y; 
+
+  /*
   for (int i=0; i < 8; i++) { //Filas
     for (int j=0; j< 8; j++) { //Columnas
       if (R[i][j]==1) {
@@ -34,7 +39,9 @@ void setup() {
      }
     }
   }
-
+  */
+  
+  
   //Está la primer reina dentro.
   //La posición de la reina está en el arreglo de posiciones.
   //Modificar la forma de averiguar cuál es el siguiente.
@@ -44,13 +51,24 @@ void setup() {
   //System.out.print(Posiciones[7]);
 }
 
-void proceso(String Posiciones[], int R[][]){
+void proceso(String Posiciones[], int R[][]){ //<>//
   //Variables locales
-  int PosReinaString = 0; //Posición de las Reinas en el String.
+  int PosReinaString = 1; //Posición de las Reinas en el String. //<>//
   
-  while(estaCompleto(Posiciones)){
-    if(estaLibre(Posiciones, R, PosReinaString)){
-      
+  while(!estaCompleto(Posiciones)){ //<>//
+    for(int i = 0; i < 8; i++){ //<>//
+      for(int j = 0; j < 8; j++){ //<>//
+        R[i][j]=1; //<>//
+        Posiciones[PosReinaString]= j + "," + i; //<>//
+          if(!estaLibre(Posiciones, R, PosReinaString)){ //<>//
+            R[i][j] = 0; //<>//
+            Posiciones[PosReinaString] = null; //<>//
+            //PosReinaString--;
+          } else { //<>//
+            PosReinaString++; //<>//
+            break;  //<>//
+          }
+      }
     }
   }
 }
@@ -69,12 +87,12 @@ int separarCoordY(String P[], int rC){
 }
 
 boolean estaCompleto(String P[]){
-  boolean completo = false;
-  
+  boolean completo = true;
+   //<>//
   if(P[7] == null){
-    completo = true;
+    completo = false; //<>//
     return completo;
-  }
+  } //<>//
   return completo;
 }
 //-------- FIN DE MAUSQUERRAMIENTAS. --------
@@ -82,10 +100,10 @@ boolean estaCompleto(String P[]){
 boolean estaLibre(String P[], int R[][], int pos){
   int xR = separarCoordX(P, pos);
   int yR = separarCoordY(P, pos);
-
-  if(libreX(R, xR, yR) && libreY(R, xR, yR) && libreDiag1(R, xR, yR) && libreDiag2(R, xR, yR)){
-  return true;
-  } else {
+ //<>//
+  if(libreX(R, xR, yR) && libreY(R, xR, yR) && libreDiag1(R, xR, yR) && libreDiag2(R, xR, yR)){ //<>//
+  return true; //<>//
+  } else { //<>//
    return false; 
   }
 }
