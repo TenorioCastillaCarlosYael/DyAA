@@ -1,6 +1,6 @@
-int R[][]=new int[8][8];
-String Posic[]= new String[8];
-String EspaciosLibres[] = new String[16];
+int R[][]=new int[8][8]; //Matriz del tablero 
+String Posiciones[]= new String[8]; //Arreglo de posiciones de las reinas.
+String EspaciosLibres[] = new String[64]; //Matriz de las posiciones libres.
 
 void setup() {
   size(704, 704); //Crea tablero.
@@ -24,25 +24,35 @@ void setup() {
     y2 += 88;
   } //Termina for.
   
-  //x, y
-  R[4][6]=1; //Inicia la primera reina y la agrega a una lista.
-  
-  
-  int ctrl = 0; //Variable control es la variable que indica en qué indice colocar las reinas en el String de posiciones.
-  for (int i=0; i < 8; i++) { //Columnas
-    for (int j=0; j< 8; j++) { //Filas
-      if (R[j][i]==1) {
-       Posic[ctrl] = j + "," + i; 
-       ctrl++;
+  //Parte para colocar la primera reina y agregar sus coordenadas en una lista.
+    R[6][4]=1; //R[y][x]
+
+  for (int i=0; i < 8; i++) { //Filas
+    for (int j=0; j< 8; j++) { //Columnas
+      if (R[i][j]==1) {
+       Posiciones[0] = j + "," + i;
      }
     }
   }
-  /*for(int i = 0; i < 8; i++){
-  System.out.print(Posiciones[i]);
-  }*/
-  int reinasColocadas = 0; //O rC para los compas.
+
+  //Está la primer reina dentro.
+  //La posición de la reina está en el arreglo de posiciones.
+  //Modificar la forma de averiguar cuál es el siguiente.
+  //Proceder a la resolución.
   
-  System.out.print(estaLibre(Posic, R, reinasColocadas));
+  proceso(Posiciones, R);
+  //System.out.print(Posiciones[7]);
+}
+
+void proceso(String Posiciones[], int R[][]){
+  //Variables locales
+  int PosReinaString = 0; //Posición de las Reinas en el String.
+  
+  while(estaCompleto(Posiciones)){
+    if(estaLibre(Posiciones, R, PosReinaString)){
+      
+    }
+  }
 }
 
 //-------- MAUSQUERRAMIENTAS QUE NOS AYUDARÁN MÁS TARDE. --------
@@ -58,15 +68,42 @@ int separarCoordY(String P[], int rC){
   return Integer.parseInt(Dividido[1]);
 }
 
+boolean estaCompleto(String P[]){
+  boolean completo = false;
+  
+  if(P[7] == null){
+    completo = true;
+    return completo;
+  }
+  return completo;
+}
+//-------- FIN DE MAUSQUERRAMIENTAS. --------
+
+boolean estaLibre(String P[], int R[][], int pos){
+  int xR = separarCoordX(P, pos);
+  int yR = separarCoordY(P, pos);
+
+  if(libreX(R, xR, yR) && libreY(R, xR, yR) && libreDiag1(R, xR, yR) && libreDiag2(R, xR, yR)){
+  return true;
+  } else {
+   return false; 
+  }
+}
+
 //-------- HERRAMIENTAS DE BÚSQUEDA. --------
 boolean libreX(int R[][], int PosxR, int PosyR){
-//Esta función dirá si existe alguna reina en x que provoque un jaque mate.
-//Funciona iterando en la posición de la reina a cada x, sin moverse de la y.
-boolean libre = true;
-int xR = PosxR;
-int yR = PosyR;
+  //Esta función dirá si existe alguna reina en x que provoque un jaque mate.
+  //Funciona iterando en la posición de la reina a cada x, sin moverse de la y.
+  //Entradas directas.
+  int xR = PosxR;
+  int yR = PosyR;
+  
+  //Variables locales.
+  boolean libre = true;
+
+  //Parte que calcula x.
   for(int x=0; x<8; x++){ 
-    if(R[x][yR]==1 && x != xR){ 
+    if(R[yR][x]==1 && x != xR){ 
       //Si cae aqui, significa que la reina no está libre y por lo tanto no se puede colocar ahí.
       libre = false;
       return libre;
@@ -78,11 +115,16 @@ int yR = PosyR;
 boolean libreY(int R[][], int PosxR, int PosyR){
   //Esta función dirá si existe alguna reina en x que provoque un jaque mate.
   //Funciona iterando en la posición de la reina a cada x, sin moverse de la y.
-boolean libre = true;
-int xR = PosxR;
-int yR = PosyR;
+  //Entradas directas.
+  int xR = PosxR;
+  int yR = PosyR;
+  
+  //Variables locales.
+  boolean libre = true;
+  
+  //Parte que calcula y.
   for(int y=0; y<8; y++){
-    if(R[xR][y]==1 && y != yR){
+    if(R[y][xR]==1 && y != yR){
       //Si cae aqui, significa que la reina no está libre y por lo tanto no se puede colocar ahí.
       libre = false;
       return libre;
@@ -148,7 +190,7 @@ boolean libreDiag1(int R[][], int PosxR, int PosyR){
   
   //Parte que recorre la matriz.
   while(control < cuadrado + 1){
-    if(R[restaX1][restaY1] == 1 && restaX1 != xR && restaY1 != yR){
+    if(R[restaY1][restaX1] == 1 && restaX1 != xR && restaY1 != yR){
       libre = false;
       return false;
     }
@@ -220,7 +262,7 @@ boolean libreDiag2(int R[][], int PosxR, int PosyR){
   
   //Parte que recorre la matriz.
   while(control < cuadrado + 1){
-    if(R[restaX2][restaY2] == 1 && restaX2 != xR && restaY2 != yR){
+    if(R[restaY2][restaX2] == 1 && restaX2 != xR && restaY2 != yR){
       libre = false;
       return false;
     }
@@ -231,25 +273,6 @@ boolean libreDiag2(int R[][], int PosxR, int PosyR){
   return libre;
 }
 //-------- FIN HERRAMIENTAS DE BÚSQUEDA. --------
-
-
-boolean estaLibre(String P[], int R[][], int cE){ //Regresa 1 si está libre, regresa 0 si no lo está.
-  int xR = separarCoordX(P, cE);
-  int yR = separarCoordY(P, cE);
-
-  if(libreX(R, xR, yR) && libreY(R, xR, yR) && libreDiag1(R, xR, yR) && libreDiag2(R, xR, yR)){
-  return true;
-  } else {
-   return false; 
-  }
-}
-
-void colocarReinas(){ //En esta deberá estar todo el proceso para colocar las reinas.
-  R[0][1]=1;
-  R[1][1]=1;
-  R[4][6]=1;
-  R[7][7]=1;
-}
 
 //Funciones para los gráficos.
 
@@ -266,7 +289,7 @@ void draw() { //Dibuja las reinas.
   int y=0;
   for (int i=0; i < 8; i++) { //Columnas
     for (int j=0; j< 8; j++) { //Filas
-      if (R[j][i]==1) {
+      if (R[i][j]==1) {
         fill(255, 0, 0);
         circle(x+44, y+44, 86);
       }
